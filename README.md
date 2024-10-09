@@ -1,4 +1,10 @@
 ## 🦇Bat Detector🦇
+## Authors
+- Lushpak Viktoriia
+- Shergina Oleksandra
+- Kyrylova Iryna
+- Bilyi Andriy
+
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
