@@ -111,14 +111,44 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   #define NUM_TAPS 32
-  float32_t highPassCoeffs[NUM_TAPS] = {
+  float32_t highPassCoeffs[NUM_TAPS + 1] = {
       // Replace with your actual high-pass filter coefficients
-      -0.0088, -0.0103, -0.0115, -0.0121, -0.0115, -0.0103, -0.0088,
-      0, 0, 0,
-      0.0088, 0.0103, 0.0115, 0.0121, 0.0115, 0.0103, 0.0088
+		  0.018921,
+		  0.000000,
+		  -0.021624,
+		  0.014392,
+		  0.015591,
+		  -0.027521,
+		  -0.000000,
+		  0.033637,
+		  -0.023387,
+		  -0.026728,
+		  0.050455,
+		  0.000000,
+		  -0.075683,
+		  0.062366,
+		  0.093549,
+		  -0.302731,
+		  0.400000,
+		  -0.302731,
+		  0.093549,
+		  0.062366,
+		  -0.075683,
+		  0.000000,
+		  0.050455,
+		  -0.026728,
+		  -0.023387,
+		  0.033637,
+		  -0.000000,
+		  -0.027521,
+		  0.015591,
+		  0.014392,
+		  -0.021624,
+		  0.000000,
+		  0.018921
   };
   arm_fir_instance_f32 S;
-  float32_t firStateF32[NUM_TAPS + 1];
+  float32_t firStateF32[NUM_TAPS];
 
   // Initialize FIR instance
   arm_fir_init_f32(&S, NUM_TAPS, highPassCoeffs, firStateF32, 1);
@@ -131,20 +161,15 @@ int main(void)
 	  float32_t inputSample = (float32_t)HAL_ADC_GetValue(&hadc1);
 	  float32_t outputSample;
 
-	  // Apply the FIR filter
 	  arm_fir_f32(&S, &inputSample, &outputSample, 1);
 
-	  uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
-	  if (adcValue > 500.0f)
-	  {
+	  if (outputSample > 100.0f) {
 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
-	      }
-	  else
-	  {
+	  } else {
 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
 	  }
 
-	  HAL_Delay(100);
+	  HAL_Delay(1);
 
 	  /* USER CODE END WHILE */
 	  MX_USB_HOST_Process();
