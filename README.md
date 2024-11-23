@@ -3,7 +3,7 @@
 - Lushpak Viktoriia
 - Shergina Oleksandra
 - Kyrylova Iryna
-- Bilyi Andriy
+- Bilyi Andrii
 
 ## Table of Contents
 - [Overview](#overview)
