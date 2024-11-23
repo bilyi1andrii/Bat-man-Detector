@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "dma.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -58,7 +59,7 @@
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
 extern DMA_HandleTypeDef hdma_adc1;
 /* USER CODE BEGIN EV */
-
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END EV */
 
 /******************************************************************************/

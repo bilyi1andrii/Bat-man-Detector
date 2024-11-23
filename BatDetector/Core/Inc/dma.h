@@ -31,11 +31,11 @@ extern "C" {
 /* DMA memory to memory transfer handles -------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-
+#include "stm32f4xx_hal.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-
+extern DMA_HandleTypeDef hdma_adc1;
 /* USER CODE END Private defines */
 
 void MX_DMA_Init(void);

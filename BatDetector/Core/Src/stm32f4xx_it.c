@@ -58,7 +58,7 @@
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
 extern DMA_HandleTypeDef hdma_adc1;
 /* USER CODE BEGIN EV */
-
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END EV */
 
 /******************************************************************************/

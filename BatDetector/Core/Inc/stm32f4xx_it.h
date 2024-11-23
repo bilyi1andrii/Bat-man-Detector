@@ -27,7 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -58,7 +58,10 @@ void SysTick_Handler(void);
 void DMA2_Stream0_IRQHandler(void);
 void OTG_FS_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-
+//void DMA2_Stream0_IRQHandler(void)
+//{
+//    HAL_DMA_IRQHandler(&hdma_adc1);
+//}
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

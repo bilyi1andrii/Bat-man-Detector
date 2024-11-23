@@ -23,6 +23,7 @@
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
+#include "usart.h"
 #include "usb_host.h"
 #include "gpio.h"
 
@@ -30,6 +31,10 @@
 /* USER CODE BEGIN Includes */
 #include "arm_math.h"
 #include "stdio.h"
+#include <stdbool.h>
+#include <string.h>
+#include <stdarg.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +55,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t adc_values[4];
+uint32_t adc_values[4] = {0};
+//int count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,14 +70,6 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _write(int file, char *ptr, int len)
-{
-	(void)file;
-	    for (int i = 0; i < len; i++) {
-	        ITM_SendChar(*ptr++);
-	    }
-	    return len;
-}
 /* USER CODE END 0 */
 
 /**
@@ -113,8 +111,14 @@ int main(void)
   MX_SPI1_Init();
   MX_USB_HOST_Init();
   MX_ADC1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, 4);
+  if (HAL_ADC_Start_DMA(&hadc1, adc_values, 4) != HAL_OK)
+  {
+      // Start Error
+	  printf("ADC Start Error\n");
+      Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,13 +126,62 @@ int main(void)
   while (1)
   {
 
-//	  printf("PA0: %u\n", adc_values[0]);
-//	  printf("PA1: %u\n", adc_values[1]);
-//	  printf("PA2: %u\n", adc_values[2]);
-//	  printf("PA3: %u\n", adc_values[3]);
-	  printf("Hello world!\n");
+//	  count++;
+//	  printf("HELLO WORLD count = %d \n", count);
+//	  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+//	  HAL_Delay(2000);
+//
+	  uint32_t max_value = adc_values[0];
+	  int max_index = 0;
+
+	  // find the maximum ADC value
+	  for (int i = 1; i < 4; i++)
+	  {
+		  if (adc_values[i] > max_value)
+		  {
+			  max_value = adc_values[i];
+			  max_index = i;
+		  }
+	  }
+
+	  switch (max_index)
+	  {
+		  case 0:
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+			  break;
+		  case 1:
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+			  break;
+		  case 2:
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+			  break;
+		  case 3:
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+			  break;
+		  default:
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+			  break;
+	  }
 
 	  HAL_Delay(1000);
+
+
+//
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
@@ -203,7 +256,12 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int _write(int file, char *ptr, int len)
+{
+ for (int i = 0; i < len; i++)
+  ITM_SendChar((*ptr++));
+ return len;
+}
 /* USER CODE END 4 */
 
 /**
