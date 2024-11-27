@@ -6,19 +6,18 @@
 
 // FIR FILTER
 #define BLOCK_SIZE      32
-#define NUM_TAPS        32
+#define NUM_TAPS        33
 
 volatile bool data_rdy_f = false;
 
 // ALSO FIR FILTER
 // arm_fir_instance_f32 fir_instance;
-// float32_t fir_state_buffer[NUM_TAPS + BLOCK_SIZE - 1];
-
-// const float32_t fir_coefficients[NUM_TAPS] = {
-//     -0.0018225230f, -0.0015879294f, +0.0000000000f, +0.0036977508f, +0.0080754303f, +0.0085302217f, -0.0000000000f, -0.0173976984f,
-//   -0.0341458607f, -0.0333591565f, +0.0000000000f, +0.0676308395f, +0.1522061835f, +0.2229246956f, +0.2504960933f, +0.2229246956f,
-//   +0.1522061835f, +0.0676308395f, +0.0000000000f, -0.0333591565f, -0.0341458607f, -0.0173976984f, -0.0000000000f, +0.0085302217f,
-//   +0.0080754303f, +0.0036977508f, +0.0000000000f, -0.0015879294f, -0.0018225230f
+// float32_t fir_state_buffer[NUM_TAPS + SAMPLES - 1];
+// high-pass with cutoff at 15 kHz, fs = 100000
+// float32_t fir_coefficients[NUM_TAPS] = {
+//     -0.000238, -0.000964, -0.001078, 0.000960, 0.004648, 0.005909, -0.000000, -0.011892, -0.019151, -0.008409, 0.021487, 
+//     0.049286, 0.039761, -0.029941, -0.145404, -0.254951, 0.700000, -0.254951, -0.145404, -0.029941, 0.039761, 0.049286, 
+//     0.021487, -0.008409, -0.019151, -0.011892, -0.000000, 0.005909, 0.004648, 0.000960, -0.001078, -0.000964, -0.000238
 // };
 
 
@@ -31,7 +30,7 @@ void Set_LED_State(uint8_t index)
     for (int i = 0; i < 4; i++)
         HAL_GPIO_WritePin(GPIOD, pins[i], (i == index) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
-
+// changed to float32_t here when implementing filter
 uint16_t Calculate_Max_Amplitude(uint16_t *buffer, uint8_t channel, uint32_t num_samples,
                                  uint8_t channels)
 {
@@ -71,9 +70,8 @@ int main(void)
     }
 
     // initialize th FIR filter
-    // arm_fir_instance_f32 S;
     // arm_fir_init_f32(&fir_instance, NUM_TAPS, (float32_t *)fir_coefficients,
-    //             fir_state_buffer, BLOCK_SIZE);
+    //             fir_state_buffer, SAMPLES);
 
 
     // Main loop
@@ -86,13 +84,14 @@ int main(void)
 
             // apply filter and calculate amplitude for each channel
             for (int i = 0; i < CHANNELS; ++i) {
-                // float32_t filtered_data[SAMPLES];
-                // for (int j = 0; j < SAMPLES; j++) 
-                //     filtered_data[j] = (float32_t)adc_values[i + j * CHANNELS];
+            //     float32_t filtered_data[SAMPLES];
+            //     for (int j = 0; j < SAMPLES; j++) 
+            //         filtered_data[j] = (float32_t)adc_values[i + j * CHANNELS];
                 
-                // arm_fir_f32(&fir_instance, filtered_data, filtered_data, BLOCK_SIZE);
+            //     arm_fir_f32(&fir_instance, filtered_data, filtered_data, SAMPLES);
 
-                // amplitude[i] = Calculate_Max_Amplitude((uint16_t *)filtered_data, i, SAMPLES, CHANNELS);
+            //     amplitude[i] = Calculate_Max_Amplitude(filtered_data, i, SAMPLES, CHANNELS);
+
                 amplitude[i] = Calculate_Max_Amplitude(adc_values, i, SAMPLES, CHANNELS);
             }
 
