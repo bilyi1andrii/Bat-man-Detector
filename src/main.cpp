@@ -2,7 +2,8 @@
 #include "periph_init.h"
 #include "stm32f4xx_hal.h"
 #include "arm_math.h"
-#include "leds.h"
+// #include "leds.h"
+#include "argb.h"
 #include <stdio.h>
 
 
@@ -54,8 +55,6 @@ volatile bool data_rdy_f = false;
 // 0.000040113793201479
 // };
 
-neopixel_led leds[LED_NUMBER + 1];
-rgb_color led_pattern[LED_NUMBER];
 
 // ADC buffer to store conversion results
 __attribute__((aligned(2))) uint16_t adc_values[CHANNELS * SAMPLES] = { 0 };
@@ -88,8 +87,6 @@ uint16_t Calculate_Max_Amplitude(uint16_t *buffer, uint8_t channel, uint32_t num
     return max_val - min_val; // Amplitude
 }
 
-bool is_lit = false;
-rgb_color red =  {255,0,0};
 
 // Main application entry
 int main(void)
@@ -103,17 +100,22 @@ int main(void)
     MX_DMA_Init();
     MX_ADC1_Init();
     MX_USART1_UART_Init();
-    MX_TIM2_Init();
+    // MX_TIM2_Init();
 
     if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_values, CHANNELS * SAMPLES) != HAL_OK)
         Error_Handler();
 
-    reset_all_leds(leds, LED_NUMBER);
-    set_specific_led(leds, LED_NUMBER, 4, red);
 
-    if (HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t * )leds, LED_NUMBER*24+24) != HAL_OK) {
-        Error_Handler();
-    }
+    ARGB_Init();
+    ARGB_Clear();
+    // ends here
+    // HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
+
+    ARGB_SetBrightness(40);  // Set global brightness to 40%
+
+    ARGB_SetRGB(2, 0, 255, 0); // Set LED №3 with 255 Green
+    ARGB_Show();
+    // while (!ARGB_Show());
 
     // Initial test
     for (int i = 0; i < 4; i++)

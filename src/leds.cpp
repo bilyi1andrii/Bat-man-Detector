@@ -20,14 +20,26 @@ void reset_specific_led(neopixel_led* leds, uint16_t led_position) {
     }
 }
 
-int set_specific_led(neopixel_led* leds, uint16_t number_leds, uint16_t led_position, rgb_color color) {
-    if (led_position >= number_leds)
-        return 1;
-    
+void set_specific_led(neopixel_led* leds, uint16_t led_position, rgb_color color) {
     for (int j = 0; j < 8; j++) {
-        leds[led_position].r[j] = (color.r & (1 << (7 - j))) ? LED_LOGICAL_ONE : LED_LOGICAL_ZERO;
-        leds[led_position].g[j] = (color.g & (1 << (7 - j))) ? LED_LOGICAL_ONE : LED_LOGICAL_ZERO;
-        leds[led_position].b[j] = (color.b & (1 << (7 - j))) ? LED_LOGICAL_ONE : LED_LOGICAL_ZERO;
+    if (color.r & 0x1 << j) {
+        (leds + led_position) -> r[7 - j] = LED_LOGICAL_ONE;
     }
-    return 0;
+    else {
+        (leds + led_position) -> r[7 - j] = LED_LOGICAL_ZERO;
+    }
+    if (color.g & 0x1 << j) {
+        (leds + led_position) -> g[7 - j] = LED_LOGICAL_ONE;
+    }
+    else {
+        (leds + led_position) -> g[7 - j] = LED_LOGICAL_ZERO;
+    }
+    if (color.b & 0x1 << j) {
+        (leds + led_position) -> b[7 - j] = LED_LOGICAL_ONE;
+    }
+    else {
+        (leds + led_position) -> b[7 - j] = LED_LOGICAL_ZERO;
+    }
+}
+    
 }

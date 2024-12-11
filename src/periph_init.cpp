@@ -200,7 +200,10 @@ void MX_ADC1_Init(void)
     }
 }
 
-
+void HAL_TIM_PWM_Pulse_FinishedCallback(TIM_HandleTypeDef *htim) {
+    HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_1);
+    htim2.Instance->CCR1 = 0;
+}
 
 // Function for timer
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
@@ -228,83 +231,3 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 }
 
 // Timer Initialization
-void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 59;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-
-    // configure DMA
-    __HAL_RCC_DMA1_CLK_ENABLE();  // Ensure DMA1 clock is enabled for timer
-    hdma_tim2_ch1.Instance = DMA1_Stream5; // DMA1 Stream5 for TIM2 Channel 1
-
-    hdma_tim2_ch1.Init.Channel = DMA_CHANNEL_3;
-
-    hdma_tim2_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH; // Memory to peripheral (Timer)
-    hdma_tim2_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim2_ch1.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_tim2_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_tim2_ch1.Init.MemDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_tim2_ch1.Init.Mode = DMA_CIRCULAR; // Set DMA mode (can be circular or normal)
-    hdma_tim2_ch1.Init.Priority = DMA_PRIORITY_LOW;
-    hdma_tim2_ch1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-    if (HAL_DMA_Init(&hdma_tim2_ch1) != HAL_OK)
-        Error_Handler();
-
-    __HAL_LINKDMA(&htim2, hdma[TIM_DMA_ID_CC1], hdma_tim2_ch1);
-
-    // 
-
-
-
-
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-  HAL_TIM_MspPostInit(&htim2);
-
-}

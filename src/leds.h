@@ -29,7 +29,7 @@ typedef struct {
 } neopixel_led;
 
 void reset_all_leds(neopixel_led* leds, uint16_t number_leds);
-int set_specific_led(neopixel_led* leds, uint16_t number_leds, uint16_t led_position, rgb_color color);
+void set_specific_led(neopixel_led* leds,  uint16_t led_position, rgb_color color);
 void reset_specific_led(neopixel_led* leds, uint16_t led_position);
 
 #endif // LEDS_H
