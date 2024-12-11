@@ -267,6 +267,32 @@ void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+
+
+    // configure DMA
+    __HAL_RCC_DMA1_CLK_ENABLE();  // Ensure DMA1 clock is enabled for timer
+    hdma_tim2_ch1.Instance = DMA1_Stream5; // DMA1 Stream5 for TIM2 Channel 1
+
+    hdma_tim2_ch1.Init.Channel = DMA_CHANNEL_3;
+
+    hdma_tim2_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH; // Memory to peripheral (Timer)
+    hdma_tim2_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_tim2_ch1.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_tim2_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_tim2_ch1.Init.MemDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_tim2_ch1.Init.Mode = DMA_NORMAL; // Set DMA mode (can be circular or normal)
+    hdma_tim2_ch1.Init.Priority = DMA_PRIORITY_HIGH;
+    hdma_tim2_ch1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_tim2_ch1) != HAL_OK)
+        Error_Handler();
+
+    __HAL_LINKDMA(&htim2, hdma[TIM_DMA_ID_CC1], hdma_tim2_ch1);
+
+    // 
+
+
+
+
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -275,6 +301,7 @@ void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */

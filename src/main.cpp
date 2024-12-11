@@ -2,24 +2,60 @@
 #include "periph_init.h"
 #include "stm32f4xx_hal.h"
 #include "arm_math.h"
+#include "leds.h"
 #include <stdio.h>
 
+
+
+
 // FIR FILTER
-#define BLOCK_SIZE      32
-#define NUM_TAPS        33
+// #define BLOCK_SIZE      32
+// #define NUM_TAPS        33
 
 volatile bool data_rdy_f = false;
 
 // ALSO FIR FILTER
 // arm_fir_instance_f32 fir_instance;
 // float32_t fir_state_buffer[NUM_TAPS + SAMPLES - 1];
-// high-pass with cutoff at 15 kHz, fs = 100000
+
 // float32_t fir_coefficients[NUM_TAPS] = {
-//     -0.000238, -0.000964, -0.001078, 0.000960, 0.004648, 0.005909, -0.000000, -0.011892, -0.019151, -0.008409, 0.021487, 
-//     0.049286, 0.039761, -0.029941, -0.145404, -0.254951, 0.700000, -0.254951, -0.145404, -0.029941, 0.039761, 0.049286, 
-//     0.021487, -0.008409, -0.019151, -0.011892, -0.000000, 0.005909, 0.004648, 0.000960, -0.001078, -0.000964, -0.000238
+//     0.000040113793201479,
+// -0.000218974894048191,
+// -0.000865067641968552,
+// -0.000817841363975894,
+// 0.001443192371711794,
+// 0.004909361493458151,
+// 0.004501759319351438,
+// -0.004215391877223766,
+// -0.016306794596114185,
+// -0.016110399845231504,
+// 0.008183821243145036,
+// 0.043611301865261430,
+// 0.049791235764090315,
+// -0.011837579734984463,
+// -0.136781425746621055,
+// -0.265328610392730979,
+// 0.680002600485357767,
+// -0.265328610392730979,
+// -0.136781425746621055,
+// -0.011837579734984463,
+// 0.049791235764090315,
+// 0.043611301865261430,
+// 0.008183821243145036,
+// -0.016110399845231504,
+// -0.016306794596114185,
+// -0.004215391877223766,
+// 0.004501759319351438,
+// 0.004909361493458151,
+// 0.001443192371711794,
+// -0.000817841363975894,
+// -0.000865067641968552,
+// -0.000218974894048191,
+// 0.000040113793201479
 // };
 
+neopixel_led leds[LED_NUMBER + 1];
+rgb_color led_patter[LED_NUMBER];
 
 // ADC buffer to store conversion results
 __attribute__((aligned(2))) uint16_t adc_values[CHANNELS * SAMPLES] = { 0 };
@@ -52,6 +88,9 @@ uint16_t Calculate_Max_Amplitude(uint16_t *buffer, uint8_t channel, uint32_t num
     return max_val - min_val; // Amplitude
 }
 
+bool is_lit = false;
+rgb_color red =  {LED_LOGICAL_ZERO, LED_LOGICAL_ZERO, LED_LOGICAL_ONE};
+
 // Main application entry
 int main(void)
 {
@@ -64,9 +103,14 @@ int main(void)
     MX_DMA_Init();
     MX_ADC1_Init();
     MX_USART1_UART_Init();
+    MX_TIM2_Init();
 
     if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_values, CHANNELS * SAMPLES) != HAL_OK)
         Error_Handler();
+
+    if (HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t * )leds, LED_NUMBER*24+24) != HAL_OK) {
+        Error_Handler();
+    }
 
     // Initial test
     for (int i = 0; i < 4; i++)
@@ -78,7 +122,7 @@ int main(void)
     // initialize th FIR filter
     // arm_fir_init_f32(&fir_instance, NUM_TAPS, (float32_t *)fir_coefficients,
     //             fir_state_buffer, SAMPLES);
-
+    set_specific_led(leds, LED_NUMBER, 4, red);
 
     // Main loop
     while (1)
@@ -177,6 +221,16 @@ void Error_Handler(void)
     while (1)
     {
         HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin); // Toggle an LED
+        HAL_Delay(500);                             // 500 ms delay
+    }
+}
+
+// to check where the error is occuring
+void DMAError_Handler(void)
+{
+    while (1)
+    {
+        HAL_GPIO_TogglePin(LD4_GPIO_Port, LD3_Pin); // Toggle an LED
         HAL_Delay(500);                             // 500 ms delay
     }
 }
