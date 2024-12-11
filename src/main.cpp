@@ -61,16 +61,15 @@ __attribute__((aligned(2))) uint16_t adc_values[CHANNELS * SAMPLES] = { 0 };
 
 void Set_LED_State(uint8_t index)
 {
-    uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
-    for (int i = 0; i < 4; i++)
-        HAL_GPIO_WritePin(GPIOD, pins[i], (i == index) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    ARGB_SetRGB(index * 4, 255, 0, 0);
 }
-void Reset_LED() {
-    uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
-    for (int i = 0; i < 4; i++) {
-        HAL_GPIO_WritePin(GPIOD, pins[i], GPIO_PIN_RESET);
-    }
-}
+
+// void Reset_LED() {
+//     uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
+//     for (int i = 0; i < 4; i++) {
+//         HAL_GPIO_WritePin(GPIOD, pins[i], GPIO_PIN_RESET);
+//     }
+// }
 // changed to float32_t here when implementing filter
 uint16_t Calculate_Max_Amplitude(uint16_t *buffer, uint8_t channel, uint32_t num_samples,
                                  uint8_t channels)
@@ -99,23 +98,14 @@ int main(void)
     MX_GPIO_Init();
     MX_DMA_Init();
     MX_ADC1_Init();
-    MX_USART1_UART_Init();
-    // MX_TIM2_Init();
+    // MX_USART1_UART_Init();
+    MX_TIM2_Init();
+    ARGB_Init();
 
     if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_values, CHANNELS * SAMPLES) != HAL_OK)
         Error_Handler();
 
 
-    ARGB_Init();
-    ARGB_Clear();
-    // ends here
-    // HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-
-    ARGB_SetBrightness(40);  // Set global brightness to 40%
-
-    ARGB_SetRGB(2, 0, 255, 0); // Set LED №3 with 255 Green
-    ARGB_Show();
-    // while (!ARGB_Show());
 
     // Initial test
     for (int i = 0; i < 4; i++)
@@ -127,7 +117,12 @@ int main(void)
     // initialize th FIR filter
     // arm_fir_init_f32(&fir_instance, NUM_TAPS, (float32_t *)fir_coefficients,
     //             fir_state_buffer, SAMPLES);
-
+    ARGB_Clear();
+    while (!ARGB_Show())
+        ;
+    
+    ARGB_SetBrightness(10);     // Set brightness (0-255)
+        ;
     // Main loop
     while (1)
     {
@@ -189,8 +184,9 @@ int main(void)
             if (max_amplitude > 50)
                 Set_LED_State(max_channel);
             else {
-                Reset_LED();
+                ARGB_Clear();
             }
+            while (!ARGB_Show());
             data_rdy_f = false; // Processed
         }
         // Perform other tasks here (e.g., debugging or communication)
@@ -229,16 +225,6 @@ void Error_Handler(void)
     }
 }
 
-// to check where the error is occuring
-void DMAError_Handler(void)
-{
-    while (1)
-    {
-        HAL_GPIO_TogglePin(LD4_GPIO_Port, LD3_Pin); // Toggle an LED
-        HAL_Delay(500);                             // 500 ms delay
-    }
-}
-
 // For all interrupt handlers for proper linking
 extern "C"
 {
@@ -258,4 +244,6 @@ extern "C"
     }
 
     void DMA2_Stream0_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_adc1); }
+
+    void DMA1_Stream6_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_tim2_ch2_ch4); }
 } //extern "C"

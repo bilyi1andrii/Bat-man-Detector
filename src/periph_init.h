@@ -5,8 +5,9 @@
 
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart1;
-extern DMA_HandleTypeDef hdma_adc1;
+extern DMA_HandleTypeDef hdma_tim2_ch2_ch4;
 extern TIM_HandleTypeDef htim2;
+extern DMA_HandleTypeDef hdma_adc1;
 
 void PeriphCommonClock_Config(void);
 void SystemClock_Config(void);
@@ -15,6 +16,5 @@ void MX_ADC1_Init(void);
 void MX_DMA_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_TIM2_Init(void);
-void HAL_TIM_PWM_Pulse_FinishedCallback(TIM_HandleTypeDef *htim);
 
 #endif // PERIPH_INIT_H
