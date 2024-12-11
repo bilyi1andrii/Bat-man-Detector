@@ -280,8 +280,8 @@ void MX_TIM2_Init(void)
     hdma_tim2_ch1.Init.MemInc = DMA_MINC_ENABLE;
     hdma_tim2_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_tim2_ch1.Init.MemDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_tim2_ch1.Init.Mode = DMA_NORMAL; // Set DMA mode (can be circular or normal)
-    hdma_tim2_ch1.Init.Priority = DMA_PRIORITY_HIGH;
+    hdma_tim2_ch1.Init.Mode = DMA_CIRCULAR; // Set DMA mode (can be circular or normal)
+    hdma_tim2_ch1.Init.Priority = DMA_PRIORITY_LOW;
     hdma_tim2_ch1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_tim2_ch1) != HAL_OK)
         Error_Handler();

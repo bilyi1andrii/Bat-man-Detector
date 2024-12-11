@@ -7,6 +7,7 @@
 // logical 1 - 0.8 us
 // logical 0 - 0.4 us
 
+// may need to be 31 and 15
 #define LED_NUMBER         16
 #define LED_LOGICAL_ONE    31
 #define LED_LOGICAL_ZERO   15
@@ -28,6 +29,7 @@ typedef struct {
 } neopixel_led;
 
 void reset_all_leds(neopixel_led* leds, uint16_t number_leds);
-void set_specific_led(neopixel_led* leds, uint16_t number_leds, uint16_t led_position, rgb_color color);
+int set_specific_led(neopixel_led* leds, uint16_t number_leds, uint16_t led_position, rgb_color color);
+void reset_specific_led(neopixel_led* leds, uint16_t led_position);
 
 #endif // LEDS_H

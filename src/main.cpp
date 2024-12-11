@@ -55,7 +55,7 @@ volatile bool data_rdy_f = false;
 // };
 
 neopixel_led leds[LED_NUMBER + 1];
-rgb_color led_patter[LED_NUMBER];
+rgb_color led_pattern[LED_NUMBER];
 
 // ADC buffer to store conversion results
 __attribute__((aligned(2))) uint16_t adc_values[CHANNELS * SAMPLES] = { 0 };
@@ -89,7 +89,7 @@ uint16_t Calculate_Max_Amplitude(uint16_t *buffer, uint8_t channel, uint32_t num
 }
 
 bool is_lit = false;
-rgb_color red =  {LED_LOGICAL_ZERO, LED_LOGICAL_ZERO, LED_LOGICAL_ONE};
+rgb_color red =  {255,0,0};
 
 // Main application entry
 int main(void)
@@ -108,6 +108,9 @@ int main(void)
     if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_values, CHANNELS * SAMPLES) != HAL_OK)
         Error_Handler();
 
+    reset_all_leds(leds, LED_NUMBER);
+    set_specific_led(leds, LED_NUMBER, 4, red);
+
     if (HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t * )leds, LED_NUMBER*24+24) != HAL_OK) {
         Error_Handler();
     }
@@ -122,7 +125,6 @@ int main(void)
     // initialize th FIR filter
     // arm_fir_init_f32(&fir_instance, NUM_TAPS, (float32_t *)fir_coefficients,
     //             fir_state_buffer, SAMPLES);
-    set_specific_led(leds, LED_NUMBER, 4, red);
 
     // Main loop
     while (1)
