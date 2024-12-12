@@ -57,6 +57,7 @@ int main(void)
     // Initialize the FIR filter
     init_filter();
 
+    uint8_t led_index = 0;
     // Main loop
     while (1)
     {
@@ -83,6 +84,10 @@ int main(void)
                 amplitude[i] = Calculate_Max_Amplitude(adc_values, i, SAMPLES, CHANNELS);
             }
 
+            // Adjustment for microphone 1 because it is faulty
+            // REMOVE THIS IF ALL MICROPHONES WORK CORRECTLY
+            amplitude[0]  = amplitude[0] * 0.95;
+
             uint16_t max_amplitude = amplitude[0];
             int max_channel = 0;
             for (int channel = 0; channel < CHANNELS; ++channel)
@@ -94,22 +99,7 @@ int main(void)
                 }
             }
 
-            // Estimating the angle of the sound
-            uint8_t led_index = 0;
-            uint8_t max_neighbour = amplitude[(max_channel+1)%CHANNELS] > amplitude[(max_channel-1)%CHANNELS]?1:-1;
-            float tangent = (float)amplitude[(max_channel+max_neighbour)%CHANNELS];
-            if (tangent > 0.8)
-             {
-                led_index = max_channel*4;
-             }
-             else if (tangent > 0.2)
-             {
-                led_index = (max_channel*4 + max_neighbour)%NUM_PIXELS;
-             }
-             else
-             {
-                led_index = (max_channel*4 + max_neighbour*2)%NUM_PIXELS;
-             }
+            
 
 #ifdef DEBUG
             // Output results via UART
@@ -132,14 +122,28 @@ int main(void)
                 }
             }
 #endif
+            reset_all();
             // Control LEDs based on ADC result
             if (max_amplitude > NO_SIGNAL_THRESHOLD) {
-                light_led(led_index, red);
-            }
-            else {
-                reset_all();
-            }
+                // Estimating the angle of the sound
+            uint8_t max_neighbour = amplitude[(max_channel+1)%CHANNELS] > amplitude[(max_channel-1)%CHANNELS]?1:-1;
+            float tangent = (float)amplitude[(max_channel+max_neighbour)%CHANNELS]/max_amplitude;
+            if (tangent > 0.8)
+             {
+                led_index = max_channel*4;
+             }
+             else if (tangent > 0.2)
+             {
+                led_index = (max_channel*4 + max_neighbour*2)%NUM_PIXELS;
+             }
+             else
+             {
+                led_index = (max_channel*4 + max_neighbour)%NUM_PIXELS;
+             }
 
+            
+            light_led(led_index, red);
+            }
             data_rdy_f = false; // Processed
         }
     }
