@@ -307,7 +307,11 @@ ARGB_STATE ARGB_Ready(void) {
  */
 ARGB_STATE ARGB_Show(void) {
     ARGB_LOC_ST = ARGB_BUSY;
-    if (BUF_COUNTER != 0 || DMA_HANDLE.State != HAL_DMA_STATE_READY) {
+    if (BUF_COUNTER != 0) {
+        // ERROR OCCURS HERE
+        return ARGB_BUSY;
+    } else if (DMA_HANDLE.State != HAL_DMA_STATE_READY){
+         HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
         return ARGB_BUSY;
     } else {
         for (volatile u8_t i = 0; i < 8; i++) {

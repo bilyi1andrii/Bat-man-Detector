@@ -5,7 +5,7 @@
 #include "leds.h"
 #include "argb.h"
 #include <stdio.h>
-
+#include "fir.h"
 
 
 volatile bool data_rdy_f = false;
@@ -14,7 +14,18 @@ volatile bool data_rdy_f = false;
 // ADC buffer to store conversion results
 __attribute__((aligned(2))) uint16_t adc_values[CHANNELS * SAMPLES] = { 0 };
 
-
+void Set_LED_State(uint8_t index)
+{
+    uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
+    for (int i = 0; i < 4; i++)
+        HAL_GPIO_WritePin(GPIOD, pins[i], (i == index) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+void Reset_LED() {
+    uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
+    for (int i = 0; i < 4; i++) {
+        HAL_GPIO_WritePin(GPIOD, pins[i], GPIO_PIN_RESET);
+    }
+}
 
 uint16_t Calculate_Max_Amplitude(uint16_t *buffer, uint8_t channel, uint32_t num_samples,
                                  uint8_t channels)
@@ -49,10 +60,20 @@ int main(void)
     if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_values, CHANNELS * SAMPLES) != HAL_OK)
         Error_Handler();
 
-
-
     // Initial test
+    
+    // led ring
     test_leds();
+
+    // built in leds
+    for (int i = 0; i < 4; i++)
+    {
+        Set_LED_State(i);
+        HAL_Delay(500);
+    }
+
+    // Initialize the FIR filter
+    init_filter();
 
     // Main loop
     while (1)
@@ -62,33 +83,50 @@ int main(void)
         {
             uint16_t amplitude[CHANNELS] = { 0 };
 
+            // Apply filter and calculate amplitude for each channel
             for (int i = 0; i < CHANNELS; ++i) {
+                uint16_t channel_buffer[SAMPLES];
+
+                for (int j = 0; j < SAMPLES; j++) {
+                    channel_buffer[j] = adc_values[i + j * CHANNELS];
+                }
+
+                fir_filter(channel_buffer);
+
+                for (int j = 0; j < SAMPLES; j++) {
+                    adc_values[i + j * CHANNELS] = channel_buffer[j];
+                }
+
                 amplitude[i] = Calculate_Max_Amplitude(adc_values, i, SAMPLES, CHANNELS);
             }
 
-                
-
-            // Find two channels with maximum amplitude
-            // Then estimate the source
-            uint16_t max_amplitude1 = amplitude[0];
-            uint16_t max_amplitude2 = amplitude[1];
-
-            int max_channel1 = 0;
-            int max_channel2 = 1;
-
+            uint16_t max_amplitude = amplitude[0];
+            int max_channel = 0;
             for (int channel = 0; channel < CHANNELS; ++channel)
             {
-                if (amplitude[channel] > max_amplitude1)
+                if (amplitude[channel] > max_amplitude)
                 {
-                    max_amplitude1 = amplitude[channel];
-                    max_channel1 = channel;
-                }
-                else if (amplitude[channel] > max_amplitude2)
-                {
-                    max_amplitude2 = amplitude[channel];
-                    max_channel2 = channel;
+                    max_amplitude = amplitude[channel];
+                    max_channel = channel;
                 }
             }
+
+            // estimate the angle of the sound
+            uint8_t led_index = 0;
+            uint8_t max_neighbour = amplitude[(max_channel+1)%CHANNELS] > amplitude[(max_channel-1)%CHANNELS]?1:-1;
+            float tangent = (float)amplitude[(max_channel+max_neighbour)%CHANNELS];
+            if (tangent > 0.8)
+             {
+                led_index = max_channel*4;
+             }
+             else if (tangent > 0.2)
+             {
+                led_index = (max_channel*4 + max_neighbour)%NUM_PIXELS;
+             }
+             else
+             {
+                led_index = (max_channel*4 + max_neighbour*2)%NUM_PIXELS;
+             }
 
 #ifdef DEBUG
             // Output results via UART
@@ -113,16 +151,16 @@ int main(void)
 #endif
             // Control LEDs based on ADC result
             
-            // very smart algorithm here...
-            if ((max_amplitude1 < 50) && (max_amplitude2 < 50))
-            {
+            // built in leds
+            if (max_amplitude > NO_SIGNAL_THRESHOLD) {
+                light_led(led_index, red);
+                Set_LED_State(max_channel);
+            }
+            else {
                 reset_all();
+                Reset_LED();
             }
-            else 
-            {
-                light_led(max_channel1*4, red);
-            }
-            while (!ARGB_Show());
+
             data_rdy_f = false; // Processed
         }
         // Perform other tasks here (e.g., debugging or communication)

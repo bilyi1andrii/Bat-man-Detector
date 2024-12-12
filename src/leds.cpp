@@ -15,8 +15,10 @@ void reset_all()
 void light_led(uint8_t index, rgb_color color)
 {
     ARGB_SetRGB(index, color.r, color.g, color.b);
-    ARGB_Show();
+    show_leds();
 }
+
+
 
 void show_leds()
 {
