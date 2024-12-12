@@ -18,7 +18,6 @@ Key Technologies
 - Signal Processing: To process bat echolocation sounds.
 - Hardware: Uses a microphone sensitive to ultrasonic frequencies.
 ## Features
-- Detect and record bat echolocation calls.
-- Analyze and visualize frequency patterns in real-time.
+- Detect bat echolocation calls.
 - Detect the source of the sound.
-- Save data for further analysis and monitoring.
+- Visuslize the results in real-time.
