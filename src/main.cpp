@@ -6,6 +6,7 @@
 #include "argb.h"
 #include <stdio.h>
 #include "fir.h"
+#include "fir.h"
 
 
 volatile bool data_rdy_f = false;
@@ -14,6 +15,18 @@ volatile bool data_rdy_f = false;
 // ADC buffer to store conversion results
 __attribute__((aligned(2))) uint16_t adc_values[CHANNELS * SAMPLES] = { 0 };
 
+void Set_LED_State(uint8_t index)
+{
+    uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
+    for (int i = 0; i < 4; i++)
+        HAL_GPIO_WritePin(GPIOD, pins[i], (i == index) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+void Reset_LED() {
+    uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
+    for (int i = 0; i < 4; i++) {
+        HAL_GPIO_WritePin(GPIOD, pins[i], GPIO_PIN_RESET);
+    }
+}
 void Set_LED_State(uint8_t index)
 {
     uint16_t pins[] = { LD3_Pin, LD4_Pin, LD5_Pin, LD6_Pin };
@@ -63,7 +76,19 @@ int main(void)
     // Initial test
     
     // led ring
+    
+    // led ring
     test_leds();
+
+    // built in leds
+    for (int i = 0; i < 4; i++)
+    {
+        Set_LED_State(i);
+        HAL_Delay(500);
+    }
+
+    // Initialize the FIR filter
+    init_filter();
 
     // built in leds
     for (int i = 0; i < 4; i++)
@@ -84,7 +109,20 @@ int main(void)
             uint16_t amplitude[CHANNELS] = { 0 };
 
             // Apply filter and calculate amplitude for each channel
+            // Apply filter and calculate amplitude for each channel
             for (int i = 0; i < CHANNELS; ++i) {
+                uint16_t channel_buffer[SAMPLES];
+
+                for (int j = 0; j < SAMPLES; j++) {
+                    channel_buffer[j] = adc_values[i + j * CHANNELS];
+                }
+
+                fir_filter(channel_buffer);
+
+                for (int j = 0; j < SAMPLES; j++) {
+                    adc_values[i + j * CHANNELS] = channel_buffer[j];
+                }
+
                 uint16_t channel_buffer[SAMPLES];
 
                 for (int j = 0; j < SAMPLES; j++) {
