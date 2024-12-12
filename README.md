@@ -17,7 +17,14 @@ Bat Detector is a project designed to detect and analyze bat sounds. The system 
 Key Technologies
 - Signal Processing: To process bat echolocation sounds.
 - Hardware: Uses a microphone sensitive to ultrasonic frequencies.
+
 ## Features
 - Detect bat echolocation calls.
 - Detect the source of the sound.
 - Visuslize the results in real-time.
+
+
+## Installation and Usage
+- Clone repository to your working space.
+-  Download platformio IDE extension in VS Code.
+-  Build and upload. And you are ready to go!
