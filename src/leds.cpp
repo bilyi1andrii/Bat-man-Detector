@@ -10,6 +10,7 @@ rgb_color blue = {0, 0, 255};
 void reset_all()
 {
     ARGB_Clear();
+    show_leds();
 }
 
 void light_led(uint8_t index, rgb_color color)
